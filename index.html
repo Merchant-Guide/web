@@ -406,6 +406,13 @@
     });
     var allIndex = linkIndex.concat(noticeIndex);
 
+    // 搜索关联词映射：输入核心词时，联动展示相关词汇的结果，让搜索更丰富
+    var SYNONYMS = {
+      "限流": ["高价", "流量"],
+      "半托管": ["本地仓", "本地仓模式"],
+      "全托管": ["常规店铺"]
+    };
+
     function renderAll() {
       LINKS.forEach(function (item, idx) {
         var mod = modContainers[item.mod];
@@ -483,10 +490,19 @@
       document.getElementById('aside-contact').classList.remove('hidden');
 
       var anyHit = false;
+      // 展开搜索词：本身 + 关联词，命中任一即展示
+      var words = [q];
+      if (hasQuery && SYNONYMS[q]) { words = SYNONYMS[q].concat([q]); }
       allIndex.forEach(function (li) {
         var el = document.querySelector('[data-link-index="' + li.idx + '"]');
         if (!el) return;
-        if (!hasQuery || li.hay.indexOf(q) >= 0) { el.classList.remove('hidden'); anyHit = true; }
+        var match = !hasQuery;
+        if (hasQuery) {
+          for (var w = 0; w < words.length; w++) {
+            if (li.hay.indexOf(words[w]) >= 0) { match = true; break; }
+          }
+        }
+        if (match) { el.classList.remove('hidden'); anyHit = true; }
         else { el.classList.add('hidden'); }
       });
 

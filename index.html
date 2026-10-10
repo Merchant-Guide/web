@@ -224,10 +224,10 @@
     .talk-head .ic { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; }
     .talk-head h2 { margin: 0; font-size: 17px; font-weight: 700; }
     .talk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-    a.talk-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; text-decoration: none; color: var(--text); background: var(--surface-hover); border: 1px solid var(--border); border-radius: 14px; padding: 24px 14px; min-height: 132px; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; text-align: center; }
+    a.talk-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; text-decoration: none; color: var(--text); background: var(--surface-hover); border: 1px solid var(--border); border-radius: 14px; padding: 24px 14px; min-height: 132px; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; text-align: center; }
     a.talk-item:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
     .talk-avatar { flex-shrink: 0; width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #2563eb, #4f8bff); }
-    .talk-name { font-size: 14.5px; font-weight: 600; }
+    .talk-new { position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 800; color: #fff; background: #e11d48; border-radius: 6px; padding: 2px 6px; letter-spacing: .5px; line-height: 1; box-shadow: 0 1px 3px rgba(225, 29, 72, 0.4); }
     .talk-en { font-size: 11.5px; color: var(--text-muted); font-weight: 500; margin-top: -2px; }
     .talk-arrow { display: none; }
 
@@ -385,7 +385,7 @@
 
     // 类目运营有话说
     var TALKERS = [
-      { cn: "胡呱呱", en: "Ivy.hu", url: "https://seller.kuajingmaihuo.com/questionnaire?surveyId=218317199119" }
+      { cn: "胡呱呱", en: "Ivy.hu", added: "2026-10-10", url: "https://seller.kuajingmaihuo.com/questionnaire?surveyId=218317199119" }
     ];
 
     var CONTACTS = {
@@ -486,16 +486,41 @@
     }
 
     // ================= 渲染类目运营有话说 =================
+    // 已点击记录：点击一次后 NEW 标即消失并永久不再展示
+    var READ_KEY = 'merc-talk-read';
+    function getRead() { try { return JSON.parse(localStorage.getItem(READ_KEY) || '[]'); } catch (_) { return []; } }
+    function markRead(key) {
+      var r = getRead();
+      if (r.indexOf(key) < 0) { r.push(key); try { localStorage.setItem(READ_KEY, JSON.stringify(r)); } catch (_) {} }
+    }
+    function isRead(key) { return getRead().indexOf(key) >= 0; }
     function renderTalkers() {
       var list = document.getElementById('talk-list');
       if (!list) return;
+      // 判断是否展示 NEW：在添加后 7 天窗口内且未被点击过
+      function isNew(addedStr, key) {
+        if (!addedStr) return false;
+        var d = new Date(addedStr + 'T00:00:00');
+        if (isNaN(d.getTime())) return false;
+        var diff = (Date.now() - d.getTime()) / 86400000;
+        if (!(diff >= 0 && diff < 7)) return false;
+        return !isRead(key);
+      }
       TALKERS.forEach(function (t) {
         var a = document.createElement('a');
         a.className = 'talk-item';
         a.href = t.url;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
-        a.innerHTML = '<span class="talk-avatar">' + esc(t.cn.charAt(0)) + '</span><span class="talk-name">' + esc(t.cn) + '</span><span class="talk-en">' + esc(t.en) + '</span><span class="talk-arrow">↗</span>';
+        var key = t.url;
+        var badge = isNew(t.added, key) ? '<span class="talk-new">NEW</span>' : '';
+        a.innerHTML = badge + '<span class="talk-avatar">' + esc(t.cn.charAt(0)) + '</span><span class="talk-name">' + esc(t.cn) + '</span><span class="talk-en">' + esc(t.en) + '</span><span class="talk-arrow">↗</span>';
+        // 点击后立即移除本卡片的 NEW 标
+        a.addEventListener('click', function () {
+          markRead(key);
+          var b = a.querySelector('.talk-new');
+          if (b) b.parentNode.removeChild(b);
+        });
         list.appendChild(a);
       });
     }

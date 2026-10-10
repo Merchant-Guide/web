@@ -218,6 +218,19 @@
 
     .no-result { text-align: center; padding: 36px 0; color: var(--text-muted); }
     .no-result .big { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    /* 类目运营有话说（方块网格版） */
+    .talk-module { margin-top: 30px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; box-shadow: var(--shadow); }
+    .talk-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .talk-head .ic { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .talk-head h2 { margin: 0; font-size: 17px; font-weight: 700; }
+    .talk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+    a.talk-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; text-decoration: none; color: var(--text); background: var(--surface-hover); border: 1px solid var(--border); border-radius: 14px; padding: 24px 14px; min-height: 132px; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; text-align: center; }
+    a.talk-item:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+    .talk-avatar { flex-shrink: 0; width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #2563eb, #4f8bff); }
+    .talk-name { font-size: 14.5px; font-weight: 600; }
+    .talk-en { font-size: 11.5px; color: var(--text-muted); font-weight: 500; margin-top: -2px; }
+    .talk-arrow { display: none; }
+
     footer { margin-top: 48px; text-align: center; font-size: 12px; color: var(--text-faint); }
     .hidden { display: none !important; }
 
@@ -291,6 +304,11 @@
           <div class="guide-list" data-module></div>
         </section>
 
+        <!-- 类目运营有话说 -->
+        <section class="talk-module">
+          <div class="talk-head"><span class="ic">💬</span><h2>类目运营有话说</h2></div>
+          <div class="talk-list" id="talk-list"></div>
+        </section>
 
       </div>
 
@@ -363,6 +381,11 @@
       { title: "关于欧盟/英国进口商标签信息的最新通知", date: "2026-10-08", url: "https://seller.kuajingmaihuo.com/questionnaire?surveyId=86333213997" },
       { title: "常规店铺【发货享欧区流量增长】备货单专属权益及发货提醒", date: "2026-10-01", url: "https://seller.kuajingmaihuo.com/questionnaire?surveyId=202587065266" },
       { title: "内置电池类产品包装要求【最新版】", date: "2026-09-28", url: "https://agentseller.temu.com/main/course/detail?courseId=2505110000024" }
+    ];
+
+    // 类目运营有话说
+    var TALKERS = [
+      { cn: "胡呱呱", en: "Ivy.hu", url: "https://seller.kuajingmaihuo.com/questionnaire?surveyId=218317199119" }
     ];
 
     var CONTACTS = {
@@ -460,6 +483,21 @@
 
     function esc(s) {
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ================= 渲染类目运营有话说 =================
+    function renderTalkers() {
+      var list = document.getElementById('talk-list');
+      if (!list) return;
+      TALKERS.forEach(function (t) {
+        var a = document.createElement('a');
+        a.className = 'talk-item';
+        a.href = t.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.innerHTML = '<span class="talk-avatar">' + esc(t.cn.charAt(0)) + '</span><span class="talk-name">' + esc(t.cn) + '</span><span class="talk-en">' + esc(t.en) + '</span><span class="talk-arrow">↗</span>';
+        list.appendChild(a);
+      });
     }
 
     // ================= 渲染联系人 =================
@@ -617,6 +655,7 @@
     renderAll();
     renderNotices();
     renderCommon();
+    renderTalkers();
     renderContacts();
   </script>
 </body>

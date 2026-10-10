@@ -552,14 +552,32 @@
     searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter' && this.value.trim()) { pushHistory(this.value.trim()); doSearch(this.value.trim()); } });
 
     // ================= 常用 & 历史搜索 =================
-    var commonEl = document.getElementById('common-hints');
-    COMMON_TERMS.forEach(function (t) {
+    // 常用词：根据用户搜索频次动态统计，最多展示 MAX_COMMON 个；无记录时用默认词
+    var COUNTS_KEY = 'merc-search-counts';
+    var MAX_COMMON = 6;
+    function getCounts() { try { return JSON.parse(localStorage.getItem(COUNTS_KEY) || '{}'); } catch (_) { return {}; } }
+    function recordSearch(term) {
+      if (!term) return;
+      var c = getCounts();
+      c[term] = (c[term] || 0) + 1;
+      try { localStorage.setItem(COUNTS_KEY, JSON.stringify(c)); } catch (_) {}
+      renderCommon();
+    }
+    function makeChip(t) {
       var chip = document.createElement('button');
       chip.className = 'hint-chip';
       chip.textContent = t;
       chip.addEventListener('click', function () { searchInput.value = t; clearBtn.style.display='block'; doSearch(t); pushHistory(t); searchInput.focus(); });
-      commonEl.appendChild(chip);
-    });
+      return chip;
+    }
+    function renderCommon() {
+      var commonEl = document.getElementById('common-hints');
+      commonEl.innerHTML = '';
+      var counts = getCounts();
+      var terms = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+      if (!terms.length) terms = COMMON_TERMS.slice();
+      terms.slice(0, MAX_COMMON).forEach(function (t) { commonEl.appendChild(makeChip(t)); });
+    }
 
     function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (_) { return []; } }
     function pushHistory(term) {
@@ -567,6 +585,7 @@
       h.unshift(term);
       if (h.length > MAX_HISTORY) h = h.slice(0, MAX_HISTORY);
       try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch (_) {}
+      recordSearch(term);
       renderHistory();
     }
     function renderHistory() {
@@ -628,6 +647,7 @@
     // ================= 初始化 =================
     renderAll();
     renderNotices();
+    renderCommon();
     renderContacts();
     renderHistory();
   </script>

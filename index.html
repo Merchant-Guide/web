@@ -521,6 +521,10 @@
         document.getElementById('aside-contact').classList.toggle('hidden', !contactHit);
         if (!anyHit && !contactHit) showNoResult(true); else showNoResult(false);
       } else {
+        // 清空搜索回到主页：恢复被隐藏的联系组与右侧联系运营栏
+        document.querySelectorAll('.contact-group').forEach(function (g) { g.classList.remove('hidden'); });
+        var ac = document.getElementById('aside-contact');
+        if (ac) ac.classList.remove('hidden');
         showNoResult(false);
       }
     }

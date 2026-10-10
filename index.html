@@ -256,10 +256,6 @@
         <span class="hints-label">常用：</span>
         <span id="common-hints"></span>
       </div>
-      <div class="hints-row" id="history-row" style="margin-top:8px;">
-        <span class="hints-label">历史：</span>
-        <span id="history-hints"></span>
-      </div>
     </div>
 
     <div class="layout">
@@ -386,8 +382,6 @@
     };
 
     var COMMON_TERMS = ["问卷", "改类目", "申诉", "欧代", "抽检", "推广"];
-    var HISTORY_KEY = 'merc-search-history';
-    var MAX_HISTORY = 5;
 
     // ================= 渲染链接 =================
     var MODS = {
@@ -549,10 +543,10 @@
 
     searchInput.addEventListener('input', function () { clearBtn.style.display = this.value ? 'block' : 'none'; doSearch(this.value); });
     clearBtn.addEventListener('click', function () { searchInput.value = ''; clearBtn.style.display = 'none'; doSearch(''); searchInput.focus(); });
-    searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter' && this.value.trim()) { pushHistory(this.value.trim()); doSearch(this.value.trim()); } });
+    searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter' && this.value.trim()) { recordSearch(this.value.trim()); doSearch(this.value.trim()); } });
 
-    // ================= 常用 & 历史搜索 =================
-    // 常用词：根据用户搜索频次动态统计，最多展示 MAX_COMMON 个；无记录时用默认词
+    // ================= 常用搜索 =================
+    // 常用词：根据用户搜索频次动态展示，固定 MAX_COMMON 个(有搜索词替换默认，不足用默认补齐)
     var COUNTS_KEY = 'merc-search-counts';
     var MAX_COMMON = 6;
     function getCounts() { try { return JSON.parse(localStorage.getItem(COUNTS_KEY) || '{}'); } catch (_) { return {}; } }
@@ -567,7 +561,7 @@
       var chip = document.createElement('button');
       chip.className = 'hint-chip';
       chip.textContent = t;
-      chip.addEventListener('click', function () { searchInput.value = t; clearBtn.style.display='block'; doSearch(t); pushHistory(t); searchInput.focus(); });
+      chip.addEventListener('click', function () { searchInput.value = t; clearBtn.style.display='block'; doSearch(t); recordSearch(t); searchInput.focus(); });
       return chip;
     }
     function renderCommon() {
@@ -575,40 +569,15 @@
       commonEl.innerHTML = '';
       var counts = getCounts();
       var terms = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
-      if (!terms.length) terms = COMMON_TERMS.slice();
+      // 有搜索词则优先展示；不足 MAX_COMMON 个时用默认词补齐，保证固定展示 6 个
+      COMMON_TERMS.forEach(function (t) {
+        if (terms.length >= MAX_COMMON) return;
+        if (terms.indexOf(t) < 0) terms.push(t);
+      });
       terms.slice(0, MAX_COMMON).forEach(function (t) { commonEl.appendChild(makeChip(t)); });
     }
 
-    function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (_) { return []; } }
-    function pushHistory(term) {
-      var h = getHistory().filter(function (x) { return x !== term; });
-      h.unshift(term);
-      if (h.length > MAX_HISTORY) h = h.slice(0, MAX_HISTORY);
-      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch (_) {}
-      recordSearch(term);
-      renderHistory();
-    }
-    function renderHistory() {
-      var hisEl = document.getElementById('history-hints');
-      hisEl.innerHTML = '';
-      var h = getHistory();
-      var row = document.getElementById('history-row');
-      if (!h.length) { row.style.display = 'none'; return; }
-      row.style.display = '';
-      h.forEach(function (t) {
-        var chip = document.createElement('button');
-        chip.className = 'hint-chip';
-        chip.innerHTML = esc(t) + '<span class="x">✕</span>';
-        chip.querySelector('.x').addEventListener('click', function (e) {
-          e.stopPropagation();
-          var nh = getHistory().filter(function (x) { return x !== t; });
-          try { localStorage.setItem(HISTORY_KEY, JSON.stringify(nh)); } catch (_) {}
-          renderHistory();
-        });
-        chip.addEventListener('click', function () { searchInput.value = t; clearBtn.style.display='block'; doSearch(t); searchInput.focus(); });
-        hisEl.appendChild(chip);
-      });
-    }
+
 
     // ================= 复制 =================
     function copyText(text) {
@@ -649,7 +618,6 @@
     renderNotices();
     renderCommon();
     renderContacts();
-    renderHistory();
   </script>
 </body>
 </html>

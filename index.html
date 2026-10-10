@@ -368,7 +368,7 @@
       { mod: "guide", title: "常见商品违规及整改（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/4f616f4c-4412-430b-b6bb-9c398b92469a.pdf" },
       { mod: "guide", title: "JIT使用注意事项和转备货须知（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/9d713831-34eb-4661-80ed-762d65da6fcb.pdf" },
       { mod: "guide", title: "新商入门-合规标签&说明书（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/a3d3ad76-0c2d-46a9-a9e7-68d2fc675c3f.pdf" },
-      { mod: "guide", title: "通用商品包装注意事项（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/397a7c46-1932-4ea9-bea7-f5fced1268d4.pdf" },
+      { mod: "guide", title: "抽检通用商品包装注意事项（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/397a7c46-1932-4ea9-bea7-f5fced1268d4.pdf" },
       { mod: "guide", title: "欧盟GPSR新法规的欧代信息及标签要求（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/0d2ca6ec-6d9d-42a4-ae8e-ecedc1ffdec4.pdf" },
       { mod: "guide", title: "本地仓店铺商家售后讲解（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/0a5d40ca-0192-477b-ba82-054ad827e209.pdf" },
       { mod: "guide", title: "常规店铺商家到货异常及退货规则（PDF）", url: "https://bdl.cdnfe.com/upload_bdl/temu-industrial-and-scientific/714be915-c587-4403-8cc0-a6ad7fad6400.pdf" },
@@ -431,7 +431,8 @@
     var SYNONYMS = {
       "限流": ["高价", "流量"],
       "半托管": ["本地仓", "本地仓模式"],
-      "全托管": ["常规店铺"]
+      "全托管": ["常规店铺"],
+      "质检": ["抽检"]
     };
 
     function renderAll() {
@@ -549,6 +550,9 @@
       var hasQuery = q.length > 0;
       document.querySelectorAll('.main-content .module').forEach(function (sec) { sec.classList.remove('hidden'); });
       document.getElementById('aside-contact').classList.remove('hidden');
+      // 搜索时隐藏「类目运营有话说」，清空搜索时恢复
+      var talk = document.querySelector('.talk-module');
+      if (talk) talk.classList.toggle('hidden', hasQuery);
 
       var anyHit = false;
       // 展开搜索词：本身 + 关联词，命中任一即展示
